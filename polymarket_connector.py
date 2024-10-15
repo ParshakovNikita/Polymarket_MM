@@ -2,6 +2,7 @@ from py_clob_client.constants import POLYGON, AMOY
 from py_clob_client.client import ClobClient
 from py_clob_client.clob_types import OrderArgs
 import json
+import re
 
 
 class Polymarket_connector:
@@ -25,14 +26,14 @@ class Polymarket_connector:
 
 class Market:
 
-    def __init__(self, client: ClobClient, condition_id: str) -> None:
+    def __init__(self, client: ClobClient, condition_id: str, league: str) -> None:
         self.name = 'Market'
         self.client = client
         self.condition_id = condition_id
         self.update_market()
 
         try:
-            self.team_name = self.extract_team_name(self.question)
+            self.team_name = self.extract_team_name(self.question, league)
         except Exception as e:
             self.team_name = ""
             print(e)
@@ -62,9 +63,20 @@ class Market:
         return None
     
 
-    def extract_team_name(self, question) -> str:
-        words = question.split()
-        if len(words) >= 3 and words[0] == "Will" and words[-4] == "win":
-            return words[2]
+    # def extract_team_name(self, question) -> str:
+    #     words = question.split()
+    #     if len(words) >= 3 and words[0] == "Will" and words[-4] == "win":
+    #         return words[2]
+    #     return None
+    
+    def extract_team_name(self, question, league):
+        if league == "NCAA":
+            pattern = r'Will (.+?) win'
+        else:
+            pattern = r'Will the (.+?) win'
+        match = re.search(pattern, question)
+        
+        if match:
+            return match.group(1)
         return None
 
